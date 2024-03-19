@@ -1366,10 +1366,30 @@ function App() {
     setBets(bets => [...bets, newBet]);
   }
 
+  function handleDeleteBet(curBet) {
+    setBets(bets => bets.filter(bet => bet.teams !== curBet.teams));
+  }
+
+  function handleDeleteAllBets() {
+    setBets([]);
+  }
+
+  function handleStake(value, curBet) {
+    console.log(value);
+    setBets(bets => bets.map(bet => (bet.teams === curBet.teams ? { ...bet, stake: value } : bet)));
+  }
+
   return (
     <section className="betting-app">
       <EventList onAddBet={handleAddBet} />
-      <BetSlip />
+      {bets.length > 0 && (
+        <BetSlip
+          bets={bets}
+          onSetStake={handleStake}
+          onDeleteBet={handleDeleteBet}
+          onDeleteAllBets={handleDeleteAllBets}
+        />
+      )}
     </section>
   );
 }
@@ -1464,7 +1484,7 @@ function Event({ event, onAddBet }) {
           {h2h.outcomes.find(outcome => outcome.name === event.awayTeam).price}
         </Button>
       </Odds>
-      <Odds>
+      <Odds additionStyle="spreads">
         <Button
           onAddBet={onAddBet}
           homeTeam={event.homeTeam}
@@ -1475,9 +1495,11 @@ function Event({ event, onAddBet }) {
         >
           {spreads.outcomes.find(outcome => outcome.name === event.homeTeam).price}
         </Button>
-        <span>{homePoint > 0 ? '+' : homePoint < 0 ? '-' : ''}</span>
-        <Select point={Math.abs(homePoint)} value={selectSpreads} onChange={e => setSelectSpreads(+e.target.value)} />
-        <span>{homePoint < 0 ? '+' : homePoint > 0 ? '-' : ''}</span>
+        <div className="select-spreads">
+          <span>{homePoint > 0 ? '+' : homePoint < 0 ? '-' : ' '}</span>
+          <Select point={Math.abs(homePoint)} value={selectSpreads} onChange={e => setSelectSpreads(+e.target.value)} />
+          <span>{homePoint < 0 ? '+' : homePoint > 0 ? '-' : ' '}</span>
+        </div>
         <Button
           onAddBet={onAddBet}
           homeTeam={event.homeTeam}
@@ -1516,63 +1538,130 @@ function Event({ event, onAddBet }) {
   );
 }
 
-function Odds({ children }) {
-  return <div className="odds">{children}</div>;
+function Odds({ children, additionStyle }) {
+  return <div className={`odds ${additionStyle ? additionStyle : ''}`}>{children}</div>;
 }
 
-function BetSlip() {
+function BetSlip({ bets, onSetStake, onDeleteBet, onDeleteAllBets }) {
+  const [isOpen, setIsOpen] = useState(true);
+  const [accStake, setAccStake] = useState(0);
+
+  function handleSetAccStake(value) {
+    if (isNaN(value)) return;
+    setAccStake(value);
+  }
+
   return (
     <div className="bet-slip">
       <div className="bet-slip__header">
         <p>
-          Bet Slip <span>X</span>
+          Bet Slip <span>{bets.length}</span>
         </p>
-        <button>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-            <path
-              fill-rule="evenodd"
-              d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z"
-              clip-rule="evenodd"
-            />
-          </svg>
+        <button onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path
+                fillRule="evenodd"
+                d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z"
+                clipRule="evenodd"
+              />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path
+                fillRule="evenodd"
+                d="M11.47 7.72a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 1 1-1.06 1.06L12 9.31l-6.97 6.97a.75.75 0 0 1-1.06-1.06l7.5-7.5Z"
+                clipRule="evenodd"
+              />
+            </svg>
+          )}
         </button>
       </div>
-      <button className="trash">
-        <span>Clear bet slip</span>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-          <path
-            fillRule="evenodd"
-            d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </button>
-      <BetsList />
-      <div className="acc">
-        <div></div>
-        <p>Accamulator</p>
-        <div className="sum">
-          <span>X.XX</span> x <input type="text"></input>
-        </div>
-      </div>
-      <button className="submit-btn">Place a bet</button>
+      {isOpen && (
+        <>
+          <button className="trash" onClick={onDeleteAllBets}>
+            <span>Clear bet slip</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path
+                fillRule="evenodd"
+                d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+          <div className="bets-list-container">
+            <BetsList bets={bets} onSetStake={onSetStake} onDeleteBet={onDeleteBet} />
+          </div>
+          {bets.some(bet => bet.stake > 0) && (
+            <div className="all-singles">
+              <p>
+                Total staked on all singles
+                <span> {bets.reduce((acc, cur) => (cur.stake > 0 ? acc + 1 : acc), 0)}</span>
+              </p>
+              <div className="sum">
+                <input type="text" value={bets.reduce((acc, cur) => cur.stake + acc, 0)} disabled></input>
+              </div>
+            </div>
+          )}
+          {bets.length > 1 && (
+            <div className="acc">
+              <p>
+                Accamulator <span>{bets.length}</span>
+              </p>
+              <div className="sum">
+                <span>{bets.reduce((acc, cur) => (acc === 0 ? cur.odds : acc * cur.odds), 0).toFixed(2)}</span> x
+                <div className="input-cpntainer">
+                  <input type="text" value={accStake} onChange={e => handleSetAccStake(+e.target.value)}></input>
+                  {accStake > 0 && (
+                    <label>{`Payout BYN ${(
+                      bets.reduce((acc, cur) => (acc === 0 ? cur.odds : acc * cur.odds), 0).toFixed(2) * accStake
+                    ).toFixed(2)}`}</label>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <button className="submit-btn">Place a bet</button>
+          <div className="total-coupone">
+            <div className="total-winnings">
+              <p className="total-header">Possible Winnings</p>
+              <p className="winnings">
+                {(
+                  +(
+                    bets.reduce((acc, cur) => (acc === 0 ? cur.odds : acc * cur.odds), 0).toFixed(2) * accStake
+                  ).toFixed(2) + +bets.reduce((acc, cur) => (acc = acc + cur.odds * cur.stake), 0).toFixed(2)
+                ).toFixed(2) + ' BYN'}
+              </p>
+            </div>
+            <div className="total-stakes">
+              <p className="total-header">Total stakes</p>
+              <p className="stakes">{accStake + bets.reduce((acc, cur) => cur.stake + acc, 0) + ' BYN'}</p>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-function BetsList() {
+function BetsList({ bets, onSetStake, onDeleteBet }) {
   return (
-    <>
-      <Bet />
-      <Bet />
-    </>
+    <ul className="bets-list">
+      {bets.map(bet => (
+        <Bet bet={bet} onSetStake={onSetStake} onDeleteBet={onDeleteBet} key={bet.teams} />
+      ))}
+    </ul>
   );
 }
 
-function Bet() {
+function Bet({ bet, onSetStake, onDeleteBet }) {
+  function handleStake(value) {
+    if (isNaN(value)) return;
+    onSetStake(value, bet);
+  }
   return (
-    <div className="bet">
-      <button>
+    <li className="bet">
+      <button onClick={() => onDeleteBet(bet)}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
           <path
             fillRule="evenodd"
@@ -1581,21 +1670,26 @@ function Bet() {
           />
         </svg>
       </button>
-      <div>
-        <h3>W1</h3>
-        <p>Team 1</p>
-        <p>Team 2</p>
+      <div className="bet-info">
+        <h3>{bet.title}</h3>
+        <p>{bet.type}</p>
+        <p>{bet.time}</p>
+        <p>{bet.teams}</p>
       </div>
       <div className="sum">
-        <span>X.XX</span> x <input type="text"></input>
+        <span>{bet.odds}</span> x
+        <div className="input-container">
+          <input type="text" value={bet.stake} onChange={e => handleStake(+e.target.value)}></input>
+          {bet.stake > 0 && <label>{`Payout BYN ${(bet.odds * bet.stake).toFixed(2)}`}</label>}
+        </div>
       </div>
-    </div>
+    </li>
   );
 }
 
 function Button({ children, homeTeam, awayTeam, type, title, time, onAddBet }) {
   function handleAdding() {
-    const bet = { odds: children, teams: `${homeTeam} - ${awayTeam}`, time, type, title };
+    const bet = { odds: children, teams: `${homeTeam} - ${awayTeam}`, time, type, title, stake: 0 };
     onAddBet(bet);
   }
   return (

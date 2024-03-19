@@ -26,10 +26,6 @@ body {
   margin: 6rem 0;
 }
 
-/* .event-list-container {
-  border-radius: 1rem;
-} */
-
 .event-list {
   width: 100%;
   display: flex;
@@ -47,6 +43,8 @@ body {
   padding: 1.2rem 2.8rem 0 2.8rem;
 
   background-color: #32323d;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
 }
 
 .event-list__header div {
@@ -65,6 +63,8 @@ body {
 
 .odds-type {
   font-size: 1.6rem;
+  text-decoration: underline;
+  text-underline-offset: 0.4rem;
 }
 
 .odds-type-desc {
@@ -77,7 +77,7 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
 
-  background-color: #3f3f4c;
+  background-color: #393944;
 
   padding: 1.6rem;
   border-radius: 1rem;
@@ -106,20 +106,33 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
+  gap: 1.6rem;
+  padding: 2rem;
+  border-left: 0.1rem solid #ff6a13;
+}
+
+.spreads {
+  justify-content: space-between;
+}
+
+.select-spreads {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 .odds span {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   color: #ff6a13;
 }
 
 .bet-slip {
+  min-width: 47rem;
   background-color: #32323d;
   position: fixed;
   bottom: 5rem;
   right: 5rem;
-  border: 0.1rem solid gray;
   padding: 1rem;
   display: flex;
   justify-content: flex-start;
@@ -142,6 +155,22 @@ body {
   cursor: pointer;
 }
 
+.bets-list-container {
+  max-height: 42rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ff6a13 #32323d;
+}
+
+.bets-list {
+  list-style-type: none;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.4rem;
+}
+
 .trash {
   display: flex;
   justify-content: center;
@@ -159,9 +188,10 @@ svg {
 .bet {
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* align-items: center; */
   gap: 1.6rem;
   border-radius: 1rem;
+  padding-right: 1.2rem;
 }
 
 .bet-slip .submit-btn {
@@ -171,23 +201,73 @@ svg {
   background-color: #ff6a13;
 }
 
-.acc {
+.bet-info {
+  width: 100%;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.bet-info h3 {
+  font-size: 1.4rem;
+}
+
+.sum span {
+  font-size: 1.2rem;
+}
+
+.acc,
+.all-singles {
+  display: flex;
+  justify-content: space-between;
+  /* align-items: center; */
   gap: 1.6rem;
+  padding-right: 1.2rem;
+}
+
+.acc p,
+.all-singles p {
+  font-size: 1.6rem;
 }
 
 .sum {
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* align-items: center; */
   gap: 0.8rem;
+  align-self: start;
+}
+
+label {
+  display: block;
+  margin-top: 0.6rem;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #ccc;
 }
 
 .bet-slip input {
   border: 0.2rem solid #ff6a13;
-  background-color: #3f3f4c;
+  background-color: #32323d;
+  color: #ff6a13;
+  padding: 0.2rem;
+}
+
+.total-coupone {
+  display: flex;
+  justify-content: space-between;
+}
+
+.total-header {
+  font-size: 1.6rem;
+}
+
+.winnings,
+.stakes {
+  font-size: 2rem;
+}
+
+.winnings {
   color: #ff6a13;
 }
 
@@ -196,18 +276,18 @@ svg {
   text-align: center;
   width: 5.2rem;
   padding: 0.4rem;
-  background-color: rgb(95, 100, 125);
+  background-color: #ff6a13;
   border-radius: 1rem;
   border: none;
-  color: #ff6a13;
+  color: #000;
   font-weight: 600;
 
   cursor: pointer;
 }
 
 .btn:hover {
-  color: #000;
-  background-color: #ff6a13;
+  color: #ff6a13;
+  background-color: #32323d;
 }
 
 .btn:active {
@@ -215,5 +295,10 @@ svg {
 }
 
 .select {
+  /* appearance: none; */
+  /* color: #000; */
   color: #ff6a13;
+  border: 0.1rem solid #ff6a13;
+  background-color: #32323d;
+  width: 6rem;
 }
